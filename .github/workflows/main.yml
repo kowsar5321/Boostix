@@ -1,0 +1,44 @@
+name: Android Build
+
+# কখন এই অ্যাকশনটি চালু হবে
+on:
+  push:
+    branches:
+      - main # মেইন ব্রাঞ্চে কোড পুশ করলেই অ্যাপ তৈরি হবে
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # গিটহাবের ভার্চুয়াল কম্পিউটার
+
+    steps:
+    # ১. গিটহাব থেকে কোড নিয়ে আসা
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # ২. জাভা সেটআপ করা
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    # ৩. ফ্ল্যাটার সেটআপ করা (ফ্ল্যাটার প্রজেক্ট হলে)
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+
+    # ৪. ডিপেনডেন্সি ইনস্টল করা
+    - name: Install dependencies
+      run: flutter pub get
+
+    # ৫. অ্যান্ডরয়েড APK তৈরি করা
+    - name: Build APK
+      run: flutter build apk --release
+
+    # ৬. তৈরি হওয়া অ্যাপটি গিটহাবে আপলোড করা
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apk
+        path: build/app/outputs/flutter-apk/app-release.apk
